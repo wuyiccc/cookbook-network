@@ -16,7 +16,7 @@ public class NioDemo01 {
 
     public static void main(String[] args) throws IOException {
 
-        SocketAddress rama = new InetSocketAddress("localhost", 11081);
+        SocketAddress rama = new InetSocketAddress("localhost", 10091);
 
         // 通道以阻塞模式打开, 只有在真正建立连接之后才会执行后续的代码
         SocketChannel client = SocketChannel.open(rama);

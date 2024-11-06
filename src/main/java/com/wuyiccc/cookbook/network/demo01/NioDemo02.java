@@ -25,7 +25,7 @@ public class NioDemo02 {
         client.configureBlocking(false);
 
 
-        ByteBuffer buffer = ByteBuffer.allocate(74);
+        ByteBuffer buffer = ByteBuffer.allocate(100);
 
 
         // 将可以读取的数据写入与System.out连接的这个输出通道中
@@ -40,6 +40,7 @@ public class NioDemo02 {
             int n = client.read(buffer);
 
             if (n > 0) {
+                System.out.println("读取字节数量: " + n);
                 // 先回绕缓存区, 然后执行写入
                 buffer.flip();
                 // 缓冲区默认记住了自己的包含的字节数量, 不过一般情况下, 输出通道不保证会写入缓冲区所有的字节

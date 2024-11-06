@@ -75,7 +75,7 @@ public class NioDemo04 {
                         SocketChannel socketChannel = (SocketChannel) key.channel();
                         ByteBuffer byteBuffer = (ByteBuffer) key.attachment();
                         if (!byteBuffer.hasRemaining()) {
-                            // 如果byteBuffer的数据已经全部写入到client了
+                            // 如果byteBuffer的数据已经全部写出去了(客户端不一定接收了)
                             // 重置position
                             byteBuffer.rewind();
                             // 拿到上一次的首字符
