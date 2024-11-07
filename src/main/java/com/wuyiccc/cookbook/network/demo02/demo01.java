@@ -18,7 +18,7 @@ public class demo01 {
         // 获取byteBuffer position的位置
         int position = byteBuffer.position();
         System.out.println(position);
-        // 修噶byteBuffer position的位置
+        // 修改byteBuffer position的位置
         byteBuffer.position(5);
         System.out.println(byteBuffer.position());
 
