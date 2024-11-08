@@ -1,4 +1,4 @@
-package com.wuyiccc.cookbook.network.demo02;
+package com.wuyiccc.cookbook.network.day02;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

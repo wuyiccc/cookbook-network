@@ -1,8 +1,5 @@
-package com.wuyiccc.cookbook.network.demo02;
+package com.wuyiccc.cookbook.network.day02;
 
-import sun.nio.ch.DirectBuffer;
-
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**

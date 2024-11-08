@@ -1,4 +1,4 @@
-package com.wuyiccc.cookbook.network.demo01;
+package com.wuyiccc.cookbook.network.day02;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -12,7 +12,7 @@ import java.nio.channels.WritableByteChannel;
  * @author wuyiccc
  * @date 2024/11/6 19:56
  */
-public class NioDemo01 {
+public class ClientDemo {
 
     public static void main(String[] args) throws IOException {
 
