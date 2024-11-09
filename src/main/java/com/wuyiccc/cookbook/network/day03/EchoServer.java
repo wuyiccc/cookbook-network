@@ -56,6 +56,8 @@ public class EchoServer {
                 SelectionKey key = iterator.next();
                 iterator.remove();
                 try {
+                    // 一个key可能会有多个状态, 多个状态的key如果这次循环中没有处理完成, remove之后，下次循环中还会拿到这个key, 所以用else if 判断key
+                    // 状态, 每次只处理一种状态的key也没有问题
                     if (key.isAcceptable()) {
 
                         ServerSocketChannel server = (ServerSocketChannel) key.channel();
