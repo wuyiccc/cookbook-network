@@ -68,9 +68,7 @@ public class EchoServer {
                         // 构建byteBuffer
                         ByteBuffer byteBuffer = ByteBuffer.allocate(100);
                         clientKey.attach(byteBuffer);
-                    }
-
-                    if (key.isReadable()) {
+                    } else if (key.isReadable()) {
                         // 读取客户端传来的数据
                         SocketChannel client = (SocketChannel) key.channel();
                         ByteBuffer output = (ByteBuffer) key.attachment();
@@ -78,9 +76,7 @@ public class EchoServer {
                         // 读取到output中, 这个时候output可能还有上一次未写入完的数据, 这里直接写入的效果
                         // 是追加到buffer末尾, 不影响echo功能
                         client.read(output);
-                    }
-
-                    if (key.isWritable()) {
+                    } else if (key.isWritable()) {
                         SocketChannel client = (SocketChannel) key.channel();
                         ByteBuffer output = (ByteBuffer) key.attachment();
                         // 这里可能是上一次读取完毕, 或者是还有部分未写入的内容, 这里position直接在
