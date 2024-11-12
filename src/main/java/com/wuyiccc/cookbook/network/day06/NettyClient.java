@@ -26,8 +26,8 @@ public class NettyClient {
                         @Override
                         protected void initChannel(Channel ch) throws Exception {
 
-                            //ch.pipeline().addLast(new NettyClientHandler());
-                            ch.pipeline().addLast(new HandleLifeCycle());
+                            ch.pipeline().addLast(new NettyClientHandler());
+                            //ch.pipeline().addLast(new HandleLifeCycle());
                         }
                     });
 

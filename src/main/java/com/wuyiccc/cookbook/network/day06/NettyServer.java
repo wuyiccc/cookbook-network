@@ -9,6 +9,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
+import java.util.UUID;
+import java.util.concurrent.ThreadFactory;
+
 /**
  * @author wuyiccc
  * @date 2024/11/10 14:52
@@ -19,8 +22,25 @@ public class NettyServer {
 
 
         // 分别创建两个处理网络的EventLoopGroup
-        EventLoopGroup parentGroup = new NioEventLoopGroup();
-        EventLoopGroup childGroup = new NioEventLoopGroup();
+        EventLoopGroup parentGroup = new NioEventLoopGroup(new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+
+                Thread t = new Thread(r);
+                t.setName("parentGroup-" + UUID.randomUUID().toString());
+                return t;
+            }
+
+        });
+        EventLoopGroup childGroup = new NioEventLoopGroup(new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+
+                Thread t = new Thread(r);
+                t.setName("childGroup-" + UUID.randomUUID().toString());
+                return t;
+            }
+        });
 
         try {
 
