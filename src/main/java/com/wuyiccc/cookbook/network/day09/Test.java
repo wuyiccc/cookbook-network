@@ -1,6 +1,6 @@
 package com.wuyiccc.cookbook.network.day09;
 
-import com.wuyiccc.cookbook.network.day09.request.RpcRequest;
+import com.wuyiccc.cookbook.network.day09.protocol.request.RpcRequest;
 import com.wuyiccc.cookbook.network.day09.serialize.HessianSerialize;
 
 import java.io.IOException;

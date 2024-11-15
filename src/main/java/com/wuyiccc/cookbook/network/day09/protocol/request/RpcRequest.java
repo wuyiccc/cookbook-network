@@ -1,4 +1,4 @@
-package com.wuyiccc.cookbook.network.day09.request;
+package com.wuyiccc.cookbook.network.day09.protocol.request;
 
 import java.io.Serializable;
 import java.util.Arrays;
