@@ -1,4 +1,4 @@
-package com.wuyiccc.cookbook.network.day12;
+package com.wuyiccc.cookbook.network.day12.demo01;
 
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
