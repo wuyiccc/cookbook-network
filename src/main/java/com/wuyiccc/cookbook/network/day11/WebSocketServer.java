@@ -1,5 +1,6 @@
-package com.wuyiccc.cookbook.network.day10;
+package com.wuyiccc.cookbook.network.day11;
 
+import com.wuyiccc.cookbook.network.day10.HttpServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -11,18 +12,18 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
+import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
-
-import java.net.InetSocketAddress;
 
 /**
  * @author wuyiccc
- * @date 2024/11/16 10:47
+ * @date 2024/11/16 11:31
  */
-public class HttpServer {
+public class WebSocketServer {
+
 
     public static void main(String[] args) throws InterruptedException {
-
         EventLoopGroup parentGroup = new NioEventLoopGroup();
         EventLoopGroup childGroup = new NioEventLoopGroup();
 
@@ -34,14 +35,12 @@ public class HttpServer {
                     protected void initChannel(SocketChannel ch) throws Exception {
 
 
-                        ch.pipeline().addLast("http-decoder", new HttpRequestDecoder());
-                        // 对象聚合组件
-                        ch.pipeline().addLast("http-aggregator", new HttpObjectAggregator(65536));
-                        ch.pipeline().addLast("http-encoder", new HttpResponseEncoder());
-                        // chunk传输组件
-                        ch.pipeline().addLast("http-chunked", new ChunkedWriteHandler());
 
-                        ch.pipeline().addLast("netty-http-server-handler", new HttpServerHandler());
+                        ch.pipeline().addLast(new HttpServerCodec());
+                        ch.pipeline().addLast(new ChunkedWriteHandler());
+                        ch.pipeline().addLast(new HttpObjectAggregator(1024 * 32));
+                        ch.pipeline().addLast(new WebSocketServerProtocolHandler("/websocket"));
+                        ch.pipeline().addLast("netty-websocket-server-handler", new WebSocketServerHandler());
                     }
                 });
 
@@ -53,6 +52,5 @@ public class HttpServer {
             parentGroup.shutdownGracefully();
             childGroup.shutdownGracefully();
         });
-
     }
 }
