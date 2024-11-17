@@ -44,7 +44,7 @@ public abstract class SingleThreadEventExecutor implements Executor {
 
 
     /**
-     * 接收SockChannel注册任务
+     * 接收SockChannel注册任务, 只有在接收到注册任务之后才会开启线程执行
      */
     @Override
     public void execute(Runnable task) {
