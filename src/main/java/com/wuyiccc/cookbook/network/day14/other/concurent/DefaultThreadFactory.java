@@ -10,6 +10,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author wuyiccc
  * @date 2024/11/20 22:12
+ *
+ * 默认线程创建工厂
  */
 @Slf4j
 public class DefaultThreadFactory implements ThreadFactory {
