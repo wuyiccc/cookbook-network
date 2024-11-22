@@ -35,7 +35,11 @@ public class DefaultThreadFactory implements ThreadFactory {
     protected final ThreadGroup threadGroup;
 
     public DefaultThreadFactory() {
-        this(DefaultThreadFactory.class, Thread.NORM_PRIORITY);
+        this(DefaultThreadFactory.class);
+    }
+
+    public DefaultThreadFactory(Class<?> poolType) {
+        this(poolType, Thread.NORM_PRIORITY);
     }
 
     public DefaultThreadFactory(Class<?> poolType, int priority) {

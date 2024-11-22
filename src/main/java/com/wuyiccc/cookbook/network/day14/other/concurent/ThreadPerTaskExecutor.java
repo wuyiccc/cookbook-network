@@ -12,12 +12,12 @@ import java.util.concurrent.ThreadFactory;
  * 线程创建执行器
  */
 @Slf4j
-public class ThreadPoolTaskExecutor implements Executor {
+public class ThreadPerTaskExecutor implements Executor {
 
     private final ThreadFactory threadFactory;
 
 
-    public ThreadPoolTaskExecutor(ThreadFactory threadFactory) {
+    public ThreadPerTaskExecutor(ThreadFactory threadFactory) {
 
         if (threadFactory == null) {
             throw new NullPointerException("threadFactory");
@@ -28,7 +28,6 @@ public class ThreadPoolTaskExecutor implements Executor {
 
     @Override
     public void execute(Runnable command) {
-
 
         // 在这里创建线程并启动
         threadFactory.newThread(command).start();
