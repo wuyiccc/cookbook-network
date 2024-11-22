@@ -99,7 +99,7 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
 
         try {
             channel.configureBlocking(false);
-            channel.register(nioEventLoop.unwrappedSelector(), SelectionKey.OP_ACCEPT);
+            channel.register(nioEventLoop.unwrappedSelector(), SelectionKey.OP_CONNECT);
         } catch (IOException e) {
             log.error(e.getMessage());
         }

@@ -126,7 +126,7 @@ public class NioEventLoop extends SingleThreadEventLoop {
         Selector selector = this.selector;
         for (; ; ) {
             log.info("我还不是netty, 我要阻塞在这里3s, 当然, 即便我是netty, 我也会阻塞在这里");
-            int selectedKeys = selector.select();
+            int selectedKeys = selector.select(3000);
             if (selectedKeys != 0 || hasTasks()) {
                 break;
             }
@@ -189,9 +189,9 @@ public class NioEventLoop extends SingleThreadEventLoop {
                 nioEventLoop.setServerSocketChannel(serverSocketChannel);
                 log.info("+++++++++++++++++++++++++++++++++++++++++++要注册到第" + nioEventLoop.id + "work上！");
                 //work线程自己注册的channel到执行器
-                nioEventLoop.registerRead(socketChannel, nioEventLoop);
-                log.info("客户端连接成功:{}", socketChannel.toString());
-                socketChannel.write(ByteBuffer.wrap("我还不是netty，但我知道你上线了".getBytes()));
+                nioEventLoop.registerRead(socketChannel1, nioEventLoop);
+                log.info("客户端连接成功:{}", socketChannel1.toString());
+                socketChannel1.write(ByteBuffer.wrap("我还不是netty，但我知道你上线了".getBytes()));
                 log.info("服务器发送消息成功！");
             }
 
