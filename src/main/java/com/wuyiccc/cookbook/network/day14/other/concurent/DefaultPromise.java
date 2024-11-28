@@ -3,7 +3,6 @@ package com.wuyiccc.cookbook.network.day14.other.concurent;
 import com.wuyiccc.cookbook.network.day14.core.executor.EventExecutor;
 import com.wuyiccc.cookbook.network.day14.other.util.ObjectUtil;
 import com.wuyiccc.cookbook.network.day14.other.util.StringUtil;
-import io.netty.util.concurrent.BlockingOperationException;
 
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;

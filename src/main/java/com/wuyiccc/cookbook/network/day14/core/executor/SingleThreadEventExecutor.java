@@ -1,7 +1,5 @@
 package com.wuyiccc.cookbook.network.day14.core.executor;
 
-import com.sun.org.apache.xml.internal.security.algorithms.implementations.IntegrityHmac;
-import com.sun.xml.internal.ws.util.Pool;
 import com.wuyiccc.cookbook.network.day14.core.reject.RejectedExecutionHandler;
 import com.wuyiccc.cookbook.network.day14.other.util.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -57,9 +55,9 @@ public abstract class SingleThreadEventExecutor implements EventExecutor {
 
 
     protected SingleThreadEventExecutor(EventExecutorGroup parent, Executor executor
-    , boolean addTaskWakesUp
-    , Queue<Runnable> taskQueue
-    , RejectedExecutionHandler rejectedHandler) {
+            , boolean addTaskWakesUp
+            , Queue<Runnable> taskQueue
+            , RejectedExecutionHandler rejectedHandler) {
 
         this.parent = parent;
         this.addTaskWakesUp = addTaskWakesUp;
@@ -169,7 +167,7 @@ public abstract class SingleThreadEventExecutor implements EventExecutor {
             return;
         }
 
-        for (;;) {
+        for (; ; ) {
             safeExecute(task);
             task = pollTaskFrom(taskQueue);
             if (task == null) {
@@ -230,5 +228,29 @@ public abstract class SingleThreadEventExecutor implements EventExecutor {
     @Override
     public void awaitTermination(Integer integer, TimeUnit timeUnit) throws InterruptedException {
 
+    }
+
+    public Queue<Runnable> getTaskQueue() {
+        return taskQueue;
+    }
+
+    public Thread getThread() {
+        return thread;
+    }
+
+    public void setThread(Thread thread) {
+        this.thread = thread;
+    }
+
+    public Executor getExecutor() {
+        return executor;
+    }
+
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
+    }
+
+    public RejectedExecutionHandler getRejectedExecutionHandler() {
+        return rejectedExecutionHandler;
     }
 }

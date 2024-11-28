@@ -27,9 +27,7 @@ public class NioEventLoop extends SingleThreadEventLoop {
 
     private EventLoopGroup workerGroup;
 
-    private static int index = 0;
 
-    private int id = 0;
 
     private ServerSocketChannel serverSocketChannel;
 
@@ -61,9 +59,6 @@ public class NioEventLoop extends SingleThreadEventLoop {
         provider = selectorProvider;
         selector = openSelector();
         selectStrategy = strategy;
-        log.info("我是" + ++index + "nioEventLoop");
-        id = index;
-        log.info("work: " + id);
     }
 
     private static Queue<Runnable> newTaskQueue(EventLoopTaskQueueFactory queueFactory) {
@@ -187,7 +182,6 @@ public class NioEventLoop extends SingleThreadEventLoop {
                 socketChannel1.configureBlocking(false);
                 NioEventLoop nioEventLoop = (NioEventLoop) workerGroup.next().next();
                 nioEventLoop.setServerSocketChannel(serverSocketChannel);
-                log.info("+++++++++++++++++++++++++++++++++++++++++++要注册到第" + nioEventLoop.id + "work上！");
                 //work线程自己注册的channel到执行器
                 nioEventLoop.registerRead(socketChannel1, nioEventLoop);
                 log.info("客户端连接成功:{}", socketChannel1.toString());

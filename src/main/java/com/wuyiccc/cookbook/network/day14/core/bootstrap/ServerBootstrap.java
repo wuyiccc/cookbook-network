@@ -2,11 +2,13 @@ package com.wuyiccc.cookbook.network.day14.core.bootstrap;
 
 import com.wuyiccc.cookbook.network.day14.core.event.EventLoopGroup;
 import com.wuyiccc.cookbook.network.day14.core.event.NioEventLoop;
+import com.wuyiccc.cookbook.network.day14.other.concurent.DefaultPromise;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.ServerSocketChannel;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author wuyiccc
@@ -40,17 +42,17 @@ public class ServerBootstrap {
         return this;
     }
 
-    public void bind(String host, int inetPort) {
+    public DefaultPromise<Object> bind(String host, int inetPort) {
 
-        bind(new InetSocketAddress(host, inetPort));
+        return bind(new InetSocketAddress(host, inetPort));
     }
 
-    public void bind(SocketAddress localAddress) {
+    public DefaultPromise<Object> bind(SocketAddress localAddress) {
 
-        doBind(localAddress);
+        return doBind(localAddress);
     }
 
-    private void doBind(SocketAddress localAddress) {
+    private DefaultPromise<Object> doBind(SocketAddress localAddress) {
 
         //得到boss事件循环组中的事件执行器，也就是单线程执行器,这个里面其实就包含一个单线程执行器，在workergroup中才包含多个单线程执行器
         //这里就暂时先写死了
@@ -59,17 +61,21 @@ public class ServerBootstrap {
         nioEventLoop.setWorkerGroup(workerGroup);
         //直接使用nioeventloop把服务端的channel注册到单线程执行器上
         nioEventLoop.register(serverSocketChannel, nioEventLoop);
-        doBind0(localAddress);
+        DefaultPromise<Object> defaultPromise = new DefaultPromise<>(nioEventLoop);
+        doBind0(localAddress, defaultPromise);
+        return defaultPromise;
     }
 
 
-    private void doBind0(SocketAddress localAddress) {
+    private void doBind0(SocketAddress localAddress, DefaultPromise<Object> defaultPromise) {
         nioEventLoop.execute(new Runnable() {
             @Override
             public void run() {
                 try {
                     serverSocketChannel.bind(localAddress);
                     log.info("服务端channel绑定了服务器端口了");
+                    TimeUnit.SECONDS.sleep(5);
+                    defaultPromise.setSuccess(null);
                 } catch (Exception e) {
                     log.error(e.getMessage());
                 }
