@@ -11,5 +11,13 @@ public class StringUtil {
         return clazz.getSimpleName();
     }
 
+    public static String simpleClassName(Object o) {
+        if (o == null) {
+            return "null_object";
+        } else {
+            return simpleClassName(o.getClass());
+        }
+
+    }
 
 }
