@@ -2,10 +2,10 @@ package com.wuyiccc.cookbook.network.hellonetty.channel.nio;
 
 import com.wuyiccc.cookbook.network.hellonetty.channel.EventLoop;
 import com.wuyiccc.cookbook.network.hellonetty.channel.EventLoopTaskQueueFactory;
-import com.wuyiccc.cookbook.network.hellonetty.util.concurent.EventExecutorChooserFactory;
+import com.wuyiccc.cookbook.network.hellonetty.util.concurrent.EventExecutorChooserFactory;
 import com.wuyiccc.cookbook.network.hellonetty.channel.MultiThreadEventLoopGroup;
-import com.wuyiccc.cookbook.network.hellonetty.util.concurent.RejectedExecutionHandler;
-import com.wuyiccc.cookbook.network.hellonetty.util.concurent.RejectedExecutionHandlers;
+import com.wuyiccc.cookbook.network.hellonetty.util.concurrent.RejectedExecutionHandler;
+import com.wuyiccc.cookbook.network.hellonetty.util.concurrent.RejectedExecutionHandlers;
 import com.wuyiccc.cookbook.network.hellonetty.channel.DefaultSelectStrategyFactory;
 import com.wuyiccc.cookbook.network.hellonetty.channel.SelectStrategyFactory;
 

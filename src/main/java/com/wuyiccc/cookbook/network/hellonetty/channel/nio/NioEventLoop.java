@@ -3,7 +3,7 @@ package com.wuyiccc.cookbook.network.hellonetty.channel.nio;
 import com.wuyiccc.cookbook.network.hellonetty.channel.EventLoopGroup;
 import com.wuyiccc.cookbook.network.hellonetty.channel.EventLoopTaskQueueFactory;
 import com.wuyiccc.cookbook.network.hellonetty.channel.SingleThreadEventLoop;
-import com.wuyiccc.cookbook.network.hellonetty.util.concurent.RejectedExecutionHandler;
+import com.wuyiccc.cookbook.network.hellonetty.util.concurrent.RejectedExecutionHandler;
 import com.wuyiccc.cookbook.network.hellonetty.channel.SelectStrategy;
 import lombok.extern.slf4j.Slf4j;
 

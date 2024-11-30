@@ -1,6 +1,6 @@
 package com.wuyiccc.cookbook.network.hellonetty.channel;
 
-import com.wuyiccc.cookbook.network.hellonetty.util.concurent.EventExecutor;
+import com.wuyiccc.cookbook.network.hellonetty.util.concurrent.EventExecutor;
 
 /**
  * @author wuyiccc

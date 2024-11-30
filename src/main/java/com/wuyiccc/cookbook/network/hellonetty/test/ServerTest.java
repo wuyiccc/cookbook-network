@@ -3,8 +3,8 @@ package com.wuyiccc.cookbook.network.hellonetty.test;
 
 import com.wuyiccc.cookbook.network.hellonetty.bootstrap.ServerBootstrap;
 import com.wuyiccc.cookbook.network.hellonetty.channel.nio.NioEventLoopGroup;
-import com.wuyiccc.cookbook.network.hellonetty.util.concurent.Future;
-import com.wuyiccc.cookbook.network.hellonetty.util.concurent.GenericFutureListener;
+import com.wuyiccc.cookbook.network.hellonetty.util.concurrent.Future;
+import com.wuyiccc.cookbook.network.hellonetty.util.concurrent.GenericFutureListener;
 
 import java.io.IOException;
 import java.nio.channels.ServerSocketChannel;

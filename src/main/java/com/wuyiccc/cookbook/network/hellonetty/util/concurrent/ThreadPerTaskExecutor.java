@@ -1,4 +1,4 @@
-package com.wuyiccc.cookbook.network.hellonetty.util.concurent;
+package com.wuyiccc.cookbook.network.hellonetty.util.concurrent;
 
 import lombok.extern.slf4j.Slf4j;
 

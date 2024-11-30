@@ -2,7 +2,7 @@ package com.wuyiccc.cookbook.network.hellonetty.bootstrap;
 
 import com.wuyiccc.cookbook.network.hellonetty.channel.EventLoopGroup;
 import com.wuyiccc.cookbook.network.hellonetty.channel.nio.NioEventLoop;
-import com.wuyiccc.cookbook.network.hellonetty.util.concurent.DefaultPromise;
+import com.wuyiccc.cookbook.network.hellonetty.util.concurrent.DefaultPromise;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
