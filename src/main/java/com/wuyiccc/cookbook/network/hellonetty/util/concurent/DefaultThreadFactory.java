@@ -39,7 +39,7 @@ public class DefaultThreadFactory implements ThreadFactory {
     }
 
     public DefaultThreadFactory(Class<?> poolType) {
-        this(poolType, Thread.NORM_PRIORITY);
+        this(poolType, false, Thread.NORM_PRIORITY);
     }
 
     public DefaultThreadFactory(Class<?> poolType, int priority) {
