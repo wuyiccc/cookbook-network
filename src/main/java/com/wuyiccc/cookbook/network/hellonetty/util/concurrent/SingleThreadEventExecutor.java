@@ -28,7 +28,7 @@ public abstract class SingleThreadEventExecutor implements EventExecutor {
 
 
     // 执行器的状态更新器, 也是一个原子类, 通过cas来改变执行器的状态值
-    private static final AtomicIntegerFieldUpdater<SingleThreadEventExecutor> STATE_UPLOAD =
+    private static final AtomicIntegerFieldUpdater<SingleThreadEventExecutor> STATE_UPDATE =
             AtomicIntegerFieldUpdater.newUpdater(SingleThreadEventExecutor.class, "state");
 
     // 任务队列的容量, 默认是Integer的最大值
@@ -92,7 +92,7 @@ public abstract class SingleThreadEventExecutor implements EventExecutor {
         // 如果执行器的状态是未启动, 就cas将其状态值变为已启动
         if (state == ST_NOT_STARTED) {
 
-            if (STATE_UPLOAD.compareAndSet(this, ST_NOT_STARTED, ST_STARTED)) {
+            if (STATE_UPDATE.compareAndSet(this, ST_NOT_STARTED, ST_STARTED)) {
                 boolean success = false;
                 try {
                     doStartThread();
@@ -101,7 +101,7 @@ public abstract class SingleThreadEventExecutor implements EventExecutor {
 
                     // 如果未启动成功, 直接把状态复原
                     if (!success) {
-                        STATE_UPLOAD.compareAndSet(this, ST_STARTED, ST_NOT_STARTED);
+                        STATE_UPDATE.compareAndSet(this, ST_STARTED, ST_NOT_STARTED);
                     }
                 }
             }

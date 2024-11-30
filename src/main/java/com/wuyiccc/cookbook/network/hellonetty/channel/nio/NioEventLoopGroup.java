@@ -3,7 +3,7 @@ package com.wuyiccc.cookbook.network.hellonetty.channel.nio;
 import com.wuyiccc.cookbook.network.hellonetty.channel.EventLoop;
 import com.wuyiccc.cookbook.network.hellonetty.channel.EventLoopTaskQueueFactory;
 import com.wuyiccc.cookbook.network.hellonetty.util.concurrent.EventExecutorChooserFactory;
-import com.wuyiccc.cookbook.network.hellonetty.channel.MultiThreadEventLoopGroup;
+import com.wuyiccc.cookbook.network.hellonetty.channel.MultithreadEventLoopGroup;
 import com.wuyiccc.cookbook.network.hellonetty.util.concurrent.RejectedExecutionHandler;
 import com.wuyiccc.cookbook.network.hellonetty.util.concurrent.RejectedExecutionHandlers;
 import com.wuyiccc.cookbook.network.hellonetty.channel.DefaultSelectStrategyFactory;
@@ -17,7 +17,7 @@ import java.util.concurrent.ThreadFactory;
  * @author wuyiccc
  * @date 2024/11/22 22:12
  */
-public class NioEventLoopGroup extends MultiThreadEventLoopGroup {
+public class NioEventLoopGroup extends MultithreadEventLoopGroup {
 
     public NioEventLoopGroup() {
         this(0);

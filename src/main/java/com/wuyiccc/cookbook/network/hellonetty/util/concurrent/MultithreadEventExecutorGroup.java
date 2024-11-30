@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author wuyiccc
  * @date 2024/11/21 21:41
  */
-public abstract class MultiThreadEventExecutorGroup extends AbstractEventExecutorGroup{
+public abstract class MultithreadEventExecutorGroup extends AbstractEventExecutorGroup{
 
     // newChild创建的数组
     private final EventExecutor[] children;
@@ -24,17 +24,17 @@ public abstract class MultiThreadEventExecutorGroup extends AbstractEventExecuto
 
     private final EventExecutorChooserFactory.EventExecutorChooser chooser;
 
-    protected MultiThreadEventExecutorGroup(int nThreads, ThreadFactory threadFactory, Object... args) {
+    protected MultithreadEventExecutorGroup(int nThreads, ThreadFactory threadFactory, Object... args) {
 
         this(nThreads, threadFactory == null ? null : new io.netty.util.concurrent.ThreadPerTaskExecutor(threadFactory), args);
     }
 
-    protected MultiThreadEventExecutorGroup(int nThreads, Executor executor, Object... args) {
+    protected MultithreadEventExecutorGroup(int nThreads, Executor executor, Object... args) {
 
         this(nThreads, executor, DefaultEventExecutorChooserFactory.INSTANCE, args);
     }
 
-    protected MultiThreadEventExecutorGroup(int nThreads, Executor executor, EventExecutorChooserFactory chooserFactory, Object... args) {
+    protected MultithreadEventExecutorGroup(int nThreads, Executor executor, EventExecutorChooserFactory chooserFactory, Object... args) {
 
         if (nThreads <= 0) {
             throw new IllegalArgumentException(String.format("nThreads: %d (expected: > 0)", nThreads));
