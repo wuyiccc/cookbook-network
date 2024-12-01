@@ -1,15 +1,11 @@
 package com.wuyiccc.cookbook.network.hellonetty.channel;
 
-import com.wuyiccc.cookbook.network.hellonetty.channel.nio.NioEventLoop;
 import com.wuyiccc.cookbook.network.hellonetty.util.concurrent.EventExecutorGroup;
-import com.wuyiccc.cookbook.network.hellonetty.util.concurrent.SingleThreadEventExecutor;
 import com.wuyiccc.cookbook.network.hellonetty.util.concurrent.RejectedExecutionHandler;
+import com.wuyiccc.cookbook.network.hellonetty.util.concurrent.SingleThreadEventExecutor;
+import com.wuyiccc.cookbook.network.hellonetty.util.internal.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
 import java.util.Queue;
 import java.util.concurrent.Executor;
 
@@ -44,87 +40,23 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
         return this;
     }
 
-    // 注册服务端
-    public void register(ServerSocketChannel channel, NioEventLoop nioEventLoop) {
-
-        if (inEventLoop(Thread.currentThread())) {
-            register0(channel, nioEventLoop);
-        } else {
-            nioEventLoop.execute(new Runnable() {
-                @Override
-                public void run() {
-
-                    register0(channel, nioEventLoop);
-                    log.info(">>> 服务器的channel已注册到多路复用器上了! : {}", Thread.currentThread().getName());
-                }
-            });
-        }
+    @Override
+    protected boolean hasTasks() {
+        return super.hasTasks();
     }
 
+    @Override
+    public ChannelFuture register(Channel channel) {
 
-    // 服务器注册客户端read
-    public void registerRead(SocketChannel channel, NioEventLoop nioEventLoop) {
-        if (nioEventLoop.inEventLoop(Thread.currentThread())) {
-            register00(channel, nioEventLoop);
-        } else {
-            nioEventLoop.execute(new Runnable() {
-                @Override
-                public void run() {
-
-                    register00(channel, nioEventLoop);
-                    log.info(">>> 客户端的channel已注册到多路复用器上看!: {}", Thread.currentThread().getName());
-                }
-            });
-        }
+        return register(new DefaultChannelPromise(channel, this));
     }
 
-    // 客户端注册
-    public void register(SocketChannel channel, NioEventLoop nioEventLoop) {
+    @Override
+    public ChannelFuture register(final ChannelPromise promise) {
 
-        if (nioEventLoop.inEventLoop(Thread.currentThread())) {
-            register0(channel, nioEventLoop);
-        } else {
-            nioEventLoop.execute(new Runnable() {
-                @Override
-                public void run() {
-
-                    register0(channel, nioEventLoop);
-                    log.info(">>> 客户端的channel已注册到workGroup多路复用器上了!: {}", Thread.currentThread().getName());
-                }
-            });
-        }
+        ObjectUtil.checkNotNull(promise, "promise");
+        promise.channel().register(this, promise);
+        return promise;
     }
 
-
-    private void register0(SocketChannel channel, NioEventLoop nioEventLoop) {
-
-        try {
-            channel.configureBlocking(false);
-            channel.register(nioEventLoop.unwrappedSelector(), SelectionKey.OP_CONNECT);
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
-
-    }
-
-    private void register00(SocketChannel channel, NioEventLoop nioEventLoop) {
-
-        try {
-
-            channel.configureBlocking(false);
-            channel.register(nioEventLoop.unwrappedSelector(), SelectionKey.OP_READ);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-    }
-
-    private void register0(ServerSocketChannel channel, NioEventLoop nioEventLoop) {
-
-        try {
-            channel.configureBlocking(false);
-            channel.register(nioEventLoop.unwrappedSelector(), SelectionKey.OP_ACCEPT);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-    }
 }

@@ -9,10 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.Iterator;
 import java.util.Queue;
@@ -27,13 +24,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 @Slf4j
 public class NioEventLoop extends SingleThreadEventLoop {
 
-    private EventLoopGroup workerGroup;
 
-
-
-    private ServerSocketChannel serverSocketChannel;
-
-    private SocketChannel socketChannel;
 
     private final Selector selector;
 
@@ -72,19 +63,6 @@ public class NioEventLoop extends SingleThreadEventLoop {
         return queueFactory.newTaskQueue(DEFAULT_MAX_PENDING_TASKS);
     }
 
-    public void setServerSocketChannel(ServerSocketChannel serverSocketChannel) {
-
-        this.serverSocketChannel = serverSocketChannel;
-    }
-
-    public void setSocketChannel(SocketChannel socketChannel) {
-
-        this.socketChannel = socketChannel;
-    }
-
-    public void setWorkerGroup(EventLoopGroup workerGroup) {
-        this.workerGroup = workerGroup;
-    }
 
     private Selector openSelector() {
 
@@ -108,11 +86,14 @@ public class NioEventLoop extends SingleThreadEventLoop {
 
         for (; ; ) {
             try {
+                // 如果没有事件就阻塞在这里: io事件/task任务
                 select();
+                // 如果有事件就处理事件
                 processSelectedKeys();
             } catch (Exception e) {
                 log.error("run异常", e);
             } finally {
+                // 执行单线程执行器中所有的任务
                 runAllTasks();
             }
         }
@@ -122,8 +103,9 @@ public class NioEventLoop extends SingleThreadEventLoop {
     private void select() throws IOException {
         Selector selector = this.selector;
         for (; ; ) {
-            log.info("我还不是netty, 我要阻塞在这里3s, 当然, 即便我是netty, 我也会阻塞在这里");
-            int selectedKeys = selector.select(3000);
+            log.info("我还不是netty, 我要阻塞在这里1s, 当然, 即便我是netty, 我也会阻塞在这里");
+            int selectedKeys = selector.select(1000);
+            // 如果有事件或者单线程执行器中有任务待之下, 就退出循环
             if (selectedKeys != 0 || hasTasks()) {
                 break;
             }
@@ -144,8 +126,14 @@ public class NioEventLoop extends SingleThreadEventLoop {
         Iterator<SelectionKey> i = selectedKeys.iterator();
         for (; ; ) {
             final SelectionKey k = i.next();
+            final Object a = k.attachment();
             i.remove();
-            processSelectedKey(k);
+
+            // 处理就绪事件
+            if (a instanceof AbstractNioChannel) {
+                processSelectedKey(k, (AbstractNioChannel) a);
+            }
+
             if (!i.hasNext()) {
                 break;
             }
@@ -153,59 +141,37 @@ public class NioEventLoop extends SingleThreadEventLoop {
     }
 
 
-    private void processSelectedKey(SelectionKey k) throws IOException {
+    // AbstractNioChannel作为抽象类, 既可以调用服务端channel的方法, 也可以调用客户端channel的方法
+    // 这样就巧妙的把客户端和服务端的channel与nioEventLoop解耦了
+    private void processSelectedKey(SelectionKey k, AbstractNioChannel ch) throws IOException {
 
         // 如果当前是客户端的事件轮询处理器
-        if (socketChannel != null) {
-
-            // 兼容处理client端的SocketChannel
-            if (k.isConnectable()) {
-                if (socketChannel.finishConnect()) {
-                    socketChannel.register(selector, SelectionKey.OP_READ);
-                }
+        try {
+            // TODO(wuyiccc): 这里netty源码调用的方法是readyOps, 作者后面的新版本代码也采用了readyOps, 目前这个版本不知道为什么用这个方法
+            // 得到key感兴趣的事件
+            int ops = k.interestOps();
+            // 如果是连接事件
+            if (ops == SelectionKey.OP_CONNECT) {
+                // 移除连接事件, 否则会一直通知
+                ops &= ~SelectionKey.OP_CONNECT;
+                // 重新把感兴趣的事件注册一下
+                k.interestOps(ops);
+                // 然后再注册客户端channel感兴趣的读事件
+                ch.doBeginRead();
             }
 
-            if (k.isReadable()) {
-                ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
-                int len = socketChannel.read(byteBuffer);
-                byte[] buffer = new byte[len];
-                byteBuffer.flip();
-                byteBuffer.get(buffer);
-                log.info(">>> 客户端收到消息: {}", new String(buffer));
+            // 如果是读事件, 不管是客户端还是服务端, 都可以直接调用read方法
+            if (ops == SelectionKey.OP_READ) {
+                ch.read();
             }
-            return;
+            if (ops == SelectionKey.OP_ACCEPT) {
+                ch.read();
+            }
+
+        } catch (CancelledKeyException ignored) {
+            throw new RuntimeException(ignored.getMessage());
         }
 
-        // 如果当前是服务端的事件轮询处理器
-        if (serverSocketChannel != null) {
-
-            if (k.isAcceptable()) {
-                SocketChannel socketChannel1 = serverSocketChannel.accept();
-                socketChannel1.configureBlocking(false);
-                NioEventLoop nioEventLoop = (NioEventLoop) workerGroup.next().next();
-                nioEventLoop.setServerSocketChannel(serverSocketChannel);
-                //work线程自己注册的channel到执行器
-                nioEventLoop.registerRead(socketChannel1, nioEventLoop);
-                log.info("客户端连接成功:{}", socketChannel1.toString());
-                socketChannel1.write(ByteBuffer.wrap("我还不是netty，但我知道你上线了".getBytes()));
-                log.info("服务器发送消息成功！");
-            }
-
-            if (k.isReadable()) {
-                SocketChannel channel = (SocketChannel) k.channel();
-                ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
-                int len = channel.read(byteBuffer);
-                if (len == -1) {
-                    log.info("客户端通道要关闭！");
-                    channel.close();
-                    return;
-                }
-                byte[] bytes = new byte[len];
-                byteBuffer.flip();
-                byteBuffer.get(bytes);
-                log.info("收到客户端发送的数据:{}", new String(bytes));
-            }
-        }
 
     }
 
