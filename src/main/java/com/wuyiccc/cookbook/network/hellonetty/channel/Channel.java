@@ -10,6 +10,7 @@ public interface Channel {
 
     ChannelId id();
 
+    // 一个channel只能对应一个EventLoop
     EventLoop eventLoop();
 
     Channel parent();
@@ -35,6 +36,7 @@ public interface Channel {
     void connect(SocketAddress remoteAddress, final SocketAddress localAddress, ChannelPromise promise);
 
 
+    // 不管是客户端channel, 还是服务端channel, 都需要调用register, 将自身java.channel注册到selector上
     void register(EventLoop eventLoop, ChannelPromise promise);
 
     void beginRead();
