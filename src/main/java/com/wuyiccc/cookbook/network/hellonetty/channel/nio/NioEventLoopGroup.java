@@ -85,6 +85,7 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
                 rejectedExecutionHandler, taskQueueFactory);
     }
 
+    // args: selectorProvider, selectStrategyFactory, rejectExecutionHandler, taskQueueFactory(可选)
     @Override
     protected EventLoop newChild(Executor executor, Object... args) throws Exception {
 
