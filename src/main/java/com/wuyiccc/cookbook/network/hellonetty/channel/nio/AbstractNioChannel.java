@@ -16,6 +16,8 @@ import java.nio.channels.SocketChannel;
 /**
  * @author wuyiccc
  * @date 2024/12/1 15:36
+ *
+ * 专门负责处理nio模式下的数据, 可能有epoll等其他特殊模式的存在
  */
 @Slf4j
 public abstract class AbstractNioChannel extends AbstractChannel {

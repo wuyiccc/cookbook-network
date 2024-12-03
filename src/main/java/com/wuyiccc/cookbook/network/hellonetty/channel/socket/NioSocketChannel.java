@@ -11,10 +11,13 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author wuyiccc
  * @date 2024/12/1 15:35
+ *
+ * 客户端channel
  */
 @Slf4j
 public class NioSocketChannel extends AbstractNioByteChannel {

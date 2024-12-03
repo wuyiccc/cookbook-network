@@ -13,6 +13,7 @@ import java.util.List;
 /**
  * @author wuyiccc
  * @date 2024/12/1 16:59
+ * 服务端channel
  */
 @Slf4j
 public abstract class AbstractNioMessageChannel extends AbstractNioChannel{

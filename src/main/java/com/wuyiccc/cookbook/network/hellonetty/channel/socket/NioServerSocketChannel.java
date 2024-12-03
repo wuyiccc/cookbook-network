@@ -16,6 +16,8 @@ import java.util.List;
 /**
  * @author wuyiccc
  * @date 2024/12/1 20:40
+ *
+ * 服务端channel
  */
 @Slf4j
 public class NioServerSocketChannel extends AbstractNioMessageChannel {
@@ -89,6 +91,7 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel {
         javaChannel().close();
     }
 
+    // 该方法是服务端接收客户端channel连接的方法
     @Override
     protected int doReadMessages(List<Object> buf) throws Exception {
 
@@ -110,7 +113,7 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel {
 
             try {
 
-                // 有异常则关闭channel客户端
+                // 有异常则关闭channel客户端, 会自动关闭对应的SelectionKey
                 ch.close();
             } catch (Throwable t2) {
 

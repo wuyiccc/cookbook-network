@@ -10,6 +10,7 @@ import java.nio.channels.SelectionKey;
 /**
  * @author wuyiccc
  * @date 2024/12/1 16:28
+ * 客户端channel
  */
 @Slf4j
 public abstract class AbstractNioByteChannel extends AbstractNioChannel {
