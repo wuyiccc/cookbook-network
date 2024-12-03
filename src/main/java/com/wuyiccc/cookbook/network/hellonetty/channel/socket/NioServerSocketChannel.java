@@ -6,6 +6,7 @@ import com.wuyiccc.cookbook.network.hellonetty.util.internal.SocketUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
@@ -50,9 +51,22 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel {
 
 
     @Override
+    public InetSocketAddress localAddress() {
+        return (InetSocketAddress) super.localAddress();
+    }
+
+
+
+    @Override
     public boolean isActive() {
 
         return isOpen() && javaChannel().socket().isBound();
+    }
+
+    @Override
+    public SocketAddress remoteAddress() {
+
+        return null;
     }
 
     @Override
@@ -62,17 +76,19 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel {
     }
 
     @Override
+    protected SocketAddress localAddress0() {
+
+        return SocketUtils.localSocketAddress(javaChannel().socket());
+    }
+
+    @Override
     public NioEventLoop eventLoop() {
 
         return (NioEventLoop) super.eventLoop();
     }
 
 
-    @Override
-    protected boolean doConnect(SocketAddress remoteAddress, SocketAddress localAddress) throws Exception {
 
-        throw new UnsupportedOperationException();
-    }
 
     @Override
     protected void doBind(SocketAddress localAddress) throws Exception {
@@ -86,10 +102,12 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel {
         }
     }
 
+    @Override
     protected void doClose() throws Exception {
 
         javaChannel().close();
     }
+
 
     // 该方法是服务端接收客户端channel连接的方法
     @Override
@@ -121,6 +139,22 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel {
             }
         }
         return 0;
+    }
+
+    @Override
+    protected boolean doConnect(SocketAddress remoteAddress, SocketAddress localAddress) throws Exception {
+
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected void doFinishConnect() throws Exception {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected SocketAddress remoteAddress0() {
+        return null;
     }
 
 }

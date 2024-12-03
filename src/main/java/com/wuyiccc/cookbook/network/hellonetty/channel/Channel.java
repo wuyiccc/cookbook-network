@@ -6,7 +6,7 @@ import java.net.SocketAddress;
  * @author wuyiccc
  * @date 2024/11/30 17:18
  */
-public interface Channel {
+public interface Channel extends ChannelOutboundInvoker {
 
     ChannelId id();
 
@@ -15,7 +15,7 @@ public interface Channel {
 
     Channel parent();
 
-    ChannelConfig config();
+    //ChannelConfig config();
 
     boolean isOpen();
 
@@ -29,18 +29,44 @@ public interface Channel {
 
     ChannelFuture closeFuture();
 
-    ChannelFuture close();
 
-    void bind(SocketAddress localAddress, ChannelPromise promise);
+    Unsafe unsafe();
 
-    void connect(SocketAddress remoteAddress, final SocketAddress localAddress, ChannelPromise promise);
+    @Override
+    Channel read();
+
+    @Override
+    Channel flush();
 
 
-    // 不管是客户端channel, 还是服务端channel, 都需要调用register, 将自身java.channel注册到selector上
-    void register(EventLoop eventLoop, ChannelPromise promise);
+    interface Unsafe {
 
-    void beginRead();
+        SocketAddress localAddress();
 
+        SocketAddress remoteAddress();
+
+
+        void register(EventLoop eventLoop, ChannelPromise promise);
+
+        void bind(SocketAddress localAddress, ChannelPromise promise);
+
+        void connect(SocketAddress remoteAddress, SocketAddress localAddress, ChannelPromise promise);
+
+        void disconnect(ChannelPromise promise);
+
+        void close(ChannelPromise promise);
+
+        void closeForcibly();
+
+        void deregister(ChannelPromise promise);
+
+        void beginRead();
+
+        void write(Object msg, ChannelPromise promise);
+
+        void flush();
+
+    }
 
 
 }

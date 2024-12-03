@@ -6,17 +6,17 @@ import com.wuyiccc.cookbook.network.hellonetty.util.internal.SocketUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author wuyiccc
  * @date 2024/12/1 15:35
- *
+ * <p>
  * 客户端channel
  */
 @Slf4j
@@ -69,6 +69,29 @@ public class NioSocketChannel extends AbstractNioByteChannel {
         return ch.isOpen() && ch.isConnected();
     }
 
+
+    @Override
+    public InetSocketAddress localAddress() {
+        return (InetSocketAddress) super.localAddress();
+    }
+
+    @Override
+    public InetSocketAddress remoteAddress() {
+        return (InetSocketAddress) super.remoteAddress();
+    }
+
+    @Override
+    protected SocketAddress localAddress0() {
+
+        return javaChannel().socket().getLocalSocketAddress();
+    }
+
+    @Override
+    protected SocketAddress remoteAddress0() {
+
+        return javaChannel().socket().getRemoteSocketAddress();
+    }
+
     @Override
     protected void doBind(SocketAddress localAddress) throws Exception {
 
@@ -106,6 +129,13 @@ public class NioSocketChannel extends AbstractNioByteChannel {
         }
     }
 
+    @Override
+    protected void doFinishConnect() throws Exception {
+
+        if (!javaChannel().finishConnect()) {
+            throw new Error();
+        }
+    }
 
     protected void doClose() throws Exception {
 
@@ -124,6 +154,16 @@ public class NioSocketChannel extends AbstractNioByteChannel {
 
         // 返回读取到的字节长度
         return len;
+    }
+
+    @Override
+    protected void doWrite(Object msg) throws Exception {
+
+        SocketChannel socketChannel = javaChannel();
+
+        ByteBuffer buffer = (ByteBuffer) msg;
+        socketChannel.write(buffer);
+        log.info(">>> 客户端发送数据成功了");
     }
 
 }

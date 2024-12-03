@@ -8,15 +8,13 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.SocketAddress;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.SocketChannel;
 
 /**
  * @author wuyiccc
  * @date 2024/12/1 15:36
- *
+ * <p>
  * 专门负责处理nio模式下的数据, 可能有epoll等其他特殊模式的存在
  */
 @Slf4j
@@ -63,79 +61,123 @@ public abstract class AbstractNioChannel extends AbstractChannel {
         return ch.isOpen();
     }
 
-    protected SelectableChannel javaChannel() {
 
+    @Override
+    public NioUnsafe unsafe() {
+        return (NioUnsafe) super.unsafe();
+    }
+
+    protected SelectableChannel javaChannel() {
         return ch;
     }
 
 
     @Override
     public NioEventLoop eventLoop() {
-
         return (NioEventLoop) super.eventLoop();
     }
 
-
     protected SelectionKey selectionKey() {
-
         assert selectionKey != null;
-
         return selectionKey;
     }
 
-
     @Override
     protected boolean isCompatible(EventLoop loop) {
-
         return loop instanceof NioEventLoop;
     }
 
-    @Override
-    protected void doRegister() throws Exception{
 
-        // 在这里把channel注册到单线程执行器中的selector上, 注意这里的第三个参数this, 这意味着channel注册的时候把本身，也就是nio类的channel当做附件放到key上了
-        selectionKey = javaChannel().register(eventLoop().unwrappedSelector(), 0, this);
+    public interface NioUnsafe extends Unsafe {
+
+        SelectableChannel ch();
+
+        void finishConnect();
+
+        void read();
+
+        void forceFlush();
+    }
+
+    protected abstract class AbstractNioUnsafe extends AbstractUnsafe implements NioUnsafe {
+
+        @Override
+        public final SelectableChannel ch() {
+            return javaChannel();
+        }
+
+        @Override
+        public final void connect(final SocketAddress remoteAddress, final SocketAddress localAddress, final ChannelPromise promise) {
+            try {
+                boolean doConnect = doConnect(remoteAddress, localAddress);
+                if (!doConnect) {
+                    //在这里直接就唤醒的话，也许客户端的channel还没连接成功，在源码中并不是这样处理的，源码中有一个定时任务
+                    //定时任务的时间到了之后会去检查连接是否成功了没，成功了才会让客户端程序继续向下运行，后面我们会进一步完善代码
+                    //把这里注释了，然后阻塞住主线程，反而可以发送成功，这说明就是这里出的问题，所以，好好想想，问题出在哪里。
+                    //没错，认真想想netty的线程模型，如果在这里threadsleep，阻塞的究竟是谁呢？是单线程执行器，因为这个方法本身就在被单线程
+                    //执行器执行了，所以在这里阻塞是没用的。阻塞在这里，就意味着单线程执行器不能继续工作，不能select.selector，无法处理关注的事件
+                    //自然也就无法真正的连接成功。那么只要这里阻塞的时间一过，执行器就会继续执行，然后设置成功状态，主线程继续向下执行，可这时候执行器也许
+                    //刚开始下一轮select.selector，然后处理连接事件，所以就会又一次发送消息失败
+                    //粗暴地在客户端代码中阻塞主线程，这样即留给了单线程执行器循环下一轮时间，主线程阻塞3秒后会自动醒来，那时候
+                    //一切都准备就绪，可以发送消息了
+                    //那么源码中是怎么做的呢？作者使用了一个定时任务，经过一定的时间后，定时任务被单线程执行器执行，在定时任务中，作者采取了一些步骤去检验
+                    //客户端有没有连接成功，成功的话就把一并传进定时任务的promise设置为成功状态，然后调用了sync()方法的主线程就被唤醒，而且一切准备就绪，
+                    //可以直接发送数据喽。
+                    //Thread.sleep(3000);
+                    promise.trySuccess();
+                }
+            } catch (Exception e) {
+                log.error(">>> connect异常", e);
+            }
+        }
+
+        @Override
+        public final void finishConnect() {
+            assert eventLoop().inEventLoop(Thread.currentThread());
+            try {
+                //真正处理连接完成的方法
+                doFinishConnect();
+            } catch (Exception e) {
+                log.error(">>> finishConnect异常", e);
+            }
+        }
+
+        @Override
+        public final void forceFlush() {
+        }
     }
 
     @Override
-    protected void doBeginRead() {
+    protected void doRegister() throws Exception {
+        //在这里把channel注册到单线程执行器中的selector上,注意这里的第三个参数this，这意味着channel注册的时候把本身，也就是nio类的channel
+        //当作附件放到key上了，之后会用到这个。
+        selectionKey = javaChannel().register(eventLoop().unwrappedSelector(), 0, this);
+    }
+
+
+    @Override
+    protected void doBeginRead() throws Exception {
 
         final SelectionKey selectionKey = this.selectionKey;
-
-        // 检查key是否是有效的
-        if(!selectionKey.isValid()) {
+        //检查key是否是有效的
+        if (!selectionKey.isValid()) {
             return;
         }
-
-        // 还没有设置感兴趣的事件, 所以得到的值为0
+        //还没有设置感兴趣的事件，所以得到的值为0
         final int interestOps = selectionKey.interestOps();
-
-        // 如果interestOps中并不包含readInterestOp, 那么注册对读事件的监听
+        //interestOps中并不包含readInterestOp
         if ((interestOps & readInterestOp) == 0) {
-            // 设置channel关注的事件, 读事件(新增)
+            //设置channel关注的事件，读事件
             selectionKey.interestOps(interestOps | readInterestOp);
         }
     }
 
-
-    @Override
-    public final void connect(final SocketAddress remoteAddress, final SocketAddress localAddress, final ChannelPromise promise) {
-
-        try {
-            boolean doConnect = doConnect(remoteAddress, localAddress);
-            if (!doConnect) {
-                // TODO(wuyiccc): 这里代码会有一个bug, 后面修复, 在收发数据的时候体现出来
-                promise.trySuccess();
-            }
-        } catch (Exception e) {
-            log.error("connect异常", e);
-        }
-
-    }
-
     protected abstract boolean doConnect(SocketAddress remoteAddress, SocketAddress localAddress) throws Exception;
 
+    protected abstract void doFinishConnect() throws Exception;
 
-    protected abstract void read();
+    @Override
+    protected void doClose() throws Exception {
+    }
 
 }

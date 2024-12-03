@@ -1,15 +1,15 @@
 package com.wuyiccc.cookbook.network.hellonetty.channel.nio;
 
-import com.wuyiccc.cookbook.network.hellonetty.channel.EventLoopGroup;
 import com.wuyiccc.cookbook.network.hellonetty.channel.EventLoopTaskQueueFactory;
+import com.wuyiccc.cookbook.network.hellonetty.channel.SelectStrategy;
 import com.wuyiccc.cookbook.network.hellonetty.channel.SingleThreadEventLoop;
 import com.wuyiccc.cookbook.network.hellonetty.util.concurrent.RejectedExecutionHandler;
-import com.wuyiccc.cookbook.network.hellonetty.channel.SelectStrategy;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.*;
+import java.nio.channels.CancelledKeyException;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.Iterator;
 import java.util.Queue;
@@ -23,7 +23,6 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 @Slf4j
 public class NioEventLoop extends SingleThreadEventLoop {
-
 
 
     private final Selector selector;
@@ -112,12 +111,12 @@ public class NioEventLoop extends SingleThreadEventLoop {
         }
     }
 
-    private void processSelectedKeys() throws IOException {
+    private void processSelectedKeys() throws Exception {
 
         processSelectedKeysPlain(selector.selectedKeys());
     }
 
-    private void processSelectedKeysPlain(Set<SelectionKey> selectedKeys) throws IOException {
+    private void processSelectedKeysPlain(Set<SelectionKey> selectedKeys) throws Exception {
 
         if (selectedKeys.isEmpty()) {
             return;
@@ -143,10 +142,11 @@ public class NioEventLoop extends SingleThreadEventLoop {
 
     // AbstractNioChannel作为抽象类, 既可以调用服务端channel的方法, 也可以调用客户端channel的方法
     // 这样就巧妙的把客户端和服务端的channel与nioEventLoop解耦了
-    private void processSelectedKey(SelectionKey k, AbstractNioChannel ch) throws IOException {
+    private void processSelectedKey(SelectionKey k, AbstractNioChannel ch) throws Exception {
 
         // 如果当前是客户端的事件轮询处理器
         try {
+            final AbstractNioChannel.NioUnsafe unsafe = ch.unsafe();
             // TODO(wuyiccc): 这里netty源码调用的方法是readyOps, 作者后面的新版本代码也采用了readyOps, 目前这个版本不知道为什么用这个方法
             // 得到key感兴趣的事件
             int ops = k.interestOps();
@@ -158,14 +158,16 @@ public class NioEventLoop extends SingleThreadEventLoop {
                 k.interestOps(ops);
                 // 然后再注册客户端channel感兴趣的读事件
                 ch.doBeginRead();
+                // 这里要做真正的客户端连接处理
+                unsafe.finishConnect();
             }
 
             // 如果是读事件, 不管是客户端还是服务端, 都可以直接调用read方法
             if (ops == SelectionKey.OP_READ) {
-                ch.read();
+                unsafe.read();
             }
             if (ops == SelectionKey.OP_ACCEPT) {
-                ch.read();
+                unsafe.read();
             }
 
         } catch (CancelledKeyException ignored) {
