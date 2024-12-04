@@ -1,9 +1,7 @@
 package com.wuyiccc.cookbook.network.day09.client;
 
-import com.sun.jmx.remote.protocol.rmi.ServerProvider;
 import com.wuyiccc.cookbook.network.day09.protocol.request.RpcRequest;
 import com.wuyiccc.cookbook.network.day09.protocol.response.RpcResponse;
-import com.wuyiccc.cookbook.network.day09.server.ServiceConfig;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -19,8 +17,8 @@ public class ServiceProxy {
     public static Object createProxy(ReferenceConfig referenceConfig) {
 
         return Proxy.newProxyInstance(ServiceProxy.class.getClassLoader()
-        , new Class[]{referenceConfig.getServerInterfaceClass()}
-        , new ServiceProxyInvocationHandler(referenceConfig));
+                , new Class[]{referenceConfig.getServerInterfaceClass()}
+                , new ServiceProxyInvocationHandler(referenceConfig));
     }
 
     static class ServiceProxyInvocationHandler implements InvocationHandler {
