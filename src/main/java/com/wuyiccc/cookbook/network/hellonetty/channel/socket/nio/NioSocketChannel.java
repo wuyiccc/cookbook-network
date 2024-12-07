@@ -1,17 +1,22 @@
-package com.wuyiccc.cookbook.network.hellonetty.channel.socket;
+package com.wuyiccc.cookbook.network.hellonetty.channel.socket.nio;
 
 import com.wuyiccc.cookbook.network.hellonetty.channel.Channel;
+import com.wuyiccc.cookbook.network.hellonetty.channel.ChannelOption;
 import com.wuyiccc.cookbook.network.hellonetty.channel.nio.AbstractNioByteChannel;
+import com.wuyiccc.cookbook.network.hellonetty.channel.socket.DefaultSocketChannelConfig;
+import com.wuyiccc.cookbook.network.hellonetty.channel.socket.SocketChannelConfig;
 import com.wuyiccc.cookbook.network.hellonetty.util.internal.SocketUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
+import java.util.Map;
 
 /**
  * @author wuyiccc
@@ -34,6 +39,8 @@ public class NioSocketChannel extends AbstractNioByteChannel {
         }
     }
 
+    private final SocketChannelConfig config;
+
 
     public NioSocketChannel() {
 
@@ -54,6 +61,12 @@ public class NioSocketChannel extends AbstractNioByteChannel {
     public NioSocketChannel(Channel parent, SocketChannel socket) {
 
         super(parent, socket);
+        config = new NioSocketChannelConfig(this, socket.socket());
+    }
+
+    @Override
+    public SocketChannelConfig config() {
+        return config;
     }
 
     @Override
@@ -166,4 +179,62 @@ public class NioSocketChannel extends AbstractNioByteChannel {
         log.info(">>> 客户端发送数据成功了");
     }
 
+    private final class NioSocketChannelConfig extends DefaultSocketChannelConfig {
+
+        // 本次 write loop 最大允许发送的字节数
+        private volatile int maxBytesPerGatheringWrite = Integer.MAX_VALUE;
+        private NioSocketChannelConfig(NioSocketChannel channel, Socket javaSocket) {
+
+            super(channel, javaSocket);
+            calculateMaxBytesPerGatheringWrite();
+        }
+
+        @Override
+        public NioSocketChannelConfig setSendBufferSize(int sendBufferSize) {
+            super.setSendBufferSize(sendBufferSize);
+            calculateMaxBytesPerGatheringWrite();
+            return this;
+        }
+
+        @Override
+        public <T> boolean setOption(ChannelOption<T> option, T value) {
+            if ( option instanceof NioChannelOption) {
+                return NioChannelOption.setOption(jdkChannel(), (NioChannelOption<T>) option, value);
+            }
+            return super.setOption(option, value);
+        }
+
+        @Override
+        public <T> T getOption(ChannelOption<T> option) {
+            if (option instanceof NioChannelOption) {
+                return NioChannelOption.getOption(jdkChannel(), (NioChannelOption<T>) option);
+            }
+            return super.getOption(option);
+        }
+
+        @Override
+        public Map<ChannelOption<?>, Object> getOptions() {
+            return getOptions(super.getOptions(), NioChannelOption.getOptions(jdkChannel()));
+        }
+
+        void setMaxBytesPerGatheringWrite(int maxBytesPerGatheringWrite) {
+            this.maxBytesPerGatheringWrite = maxBytesPerGatheringWrite;
+        }
+
+        int getMaxBytesPerGatheringWrite() {
+            return maxBytesPerGatheringWrite;
+        }
+
+        private void calculateMaxBytesPerGatheringWrite() {
+
+            int newSendBufferSize = getSendBufferSize() << 1;
+            if (newSendBufferSize > 0) {
+                setMaxBytesPerGatheringWrite(getSendBufferSize() << 1);
+            }
+        }
+
+        private SocketChannel jdkChannel() {
+            return ((NioSocketChannel) channel).javaChannel();
+        }
+    }
 }

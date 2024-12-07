@@ -1,23 +1,29 @@
-package com.wuyiccc.cookbook.network.hellonetty.channel.socket;
+package com.wuyiccc.cookbook.network.hellonetty.channel.socket.nio;
 
+import com.wuyiccc.cookbook.network.hellonetty.channel.ChannelConfig;
+import com.wuyiccc.cookbook.network.hellonetty.channel.ChannelOption;
 import com.wuyiccc.cookbook.network.hellonetty.channel.nio.AbstractNioMessageChannel;
 import com.wuyiccc.cookbook.network.hellonetty.channel.nio.NioEventLoop;
+import com.wuyiccc.cookbook.network.hellonetty.channel.socket.DefaultServerSocketChannelConfig;
+import com.wuyiccc.cookbook.network.hellonetty.channel.socket.ServerSocketChannelConfig;
 import com.wuyiccc.cookbook.network.hellonetty.util.internal.SocketUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.SocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author wuyiccc
  * @date 2024/12/1 20:40
- *
+ * <p>
  * 服务端channel
  */
 @Slf4j
@@ -37,6 +43,7 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel {
         }
     }
 
+    private final ServerSocketChannelConfig config;
 
     public NioServerSocketChannel() {
 
@@ -47,6 +54,7 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel {
 
         // 创建的为NioServerSocketChannel时, 没有父类channel, SelectionKey.OP_ACCEPT是服务端channel的关注事件
         super(null, channel, SelectionKey.OP_ACCEPT);
+        config = new NioServerSocketChannelConfig(this, javaChannel().socket());
     }
 
 
@@ -56,6 +64,11 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel {
     }
 
 
+    @Override
+    public ServerSocketChannelConfig config() {
+
+        return config;
+    }
 
     @Override
     public boolean isActive() {
@@ -88,13 +101,11 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel {
     }
 
 
-
-
     @Override
     protected void doBind(SocketAddress localAddress) throws Exception {
 
         // 这里暂时写死backlog等待队列长度为128
-        javaChannel().bind(localAddress, 128);
+        javaChannel().bind(localAddress, config.getBacklog());
 
         if (isActive()) {
             log.info(">>> 服务端绑定端口成功");
@@ -157,4 +168,39 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel {
         return null;
     }
 
+
+    private final class NioServerSocketChannelConfig extends DefaultServerSocketChannelConfig {
+        private NioServerSocketChannelConfig(NioServerSocketChannel channel, ServerSocket javaSocket) {
+            super(channel, javaSocket);
+        }
+
+
+        @Override
+        public <T> boolean setOption(ChannelOption<T> option, T value) {
+            if (option instanceof NioChannelOption) {
+                //把用户设置的参数传入原生的jdk的channel中
+                return NioChannelOption.setOption(jdkChannel(), (NioChannelOption<T>) option, value);
+            }
+            //正常调用的话，该方法的逻辑会走到这个分支处
+            return super.setOption(option, value);
+        }
+
+        @Override
+        public <T> T getOption(ChannelOption<T> option) {
+            //这里有一行代码，判断jdk版本是否大于7，我就直接删掉了，默认大家用的都是7以上，否则要引入更多工具类
+            if (option instanceof NioChannelOption) {
+                return NioChannelOption.getOption(jdkChannel(), (NioChannelOption<T>) option);
+            }
+            return super.getOption(option);
+        }
+
+        @Override
+        public Map<ChannelOption<?>, Object> getOptions() {
+            return getOptions(super.getOptions(), NioChannelOption.getOptions(jdkChannel()));
+        }
+
+        private ServerSocketChannel jdkChannel() {
+            return ((NioServerSocketChannel) channel).javaChannel();
+        }
+    }
 }

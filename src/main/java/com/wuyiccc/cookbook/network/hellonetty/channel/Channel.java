@@ -1,12 +1,14 @@
 package com.wuyiccc.cookbook.network.hellonetty.channel;
 
+import com.wuyiccc.cookbook.network.hellonetty.util.AttributeMap;
+
 import java.net.SocketAddress;
 
 /**
  * @author wuyiccc
  * @date 2024/11/30 17:18
  */
-public interface Channel extends ChannelOutboundInvoker {
+public interface Channel extends AttributeMap, ChannelOutboundInvoker {
 
     ChannelId id();
 
@@ -15,7 +17,7 @@ public interface Channel extends ChannelOutboundInvoker {
 
     Channel parent();
 
-    //ChannelConfig config();
+    ChannelConfig config();
 
     boolean isOpen();
 

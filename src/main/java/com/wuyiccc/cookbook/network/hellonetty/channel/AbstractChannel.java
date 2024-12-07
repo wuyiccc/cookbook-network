@@ -1,5 +1,6 @@
 package com.wuyiccc.cookbook.network.hellonetty.channel;
 
+import com.wuyiccc.cookbook.network.hellonetty.util.DefaultAttributeMap;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.SocketAddress;
@@ -10,7 +11,7 @@ import java.nio.channels.ClosedChannelException;
  * @date 2024/11/30 22:13
  */
 @Slf4j
-public abstract class AbstractChannel implements Channel {
+public abstract class AbstractChannel extends DefaultAttributeMap implements Channel {
 
     /**
      * 如果创建的为服务端channel, parent则为null

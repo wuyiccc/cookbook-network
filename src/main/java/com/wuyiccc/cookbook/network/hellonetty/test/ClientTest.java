@@ -5,11 +5,10 @@ import com.wuyiccc.cookbook.network.hellonetty.bootstrap.Bootstrap;
 import com.wuyiccc.cookbook.network.hellonetty.channel.Channel;
 import com.wuyiccc.cookbook.network.hellonetty.channel.ChannelFuture;
 import com.wuyiccc.cookbook.network.hellonetty.channel.nio.NioEventLoopGroup;
-import com.wuyiccc.cookbook.network.hellonetty.channel.socket.NioSocketChannel;
+import com.wuyiccc.cookbook.network.hellonetty.channel.socket.nio.NioSocketChannel;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 
 public class ClientTest {
@@ -19,10 +18,6 @@ public class ClientTest {
         bootstrap.group(workerGroup).
                 channel(NioSocketChannel.class);
         ChannelFuture cf = bootstrap.connect("127.0.0.1", 8080).sync();
-        Thread.sleep(3000);
-        Channel channel = cf.channel();
-        channel.writeAndFlush(ByteBuffer.wrap("我是真正的netty!".getBytes(StandardCharsets.UTF_8)));
-        System.out.println("发送数据成功了");
     }
 
 }

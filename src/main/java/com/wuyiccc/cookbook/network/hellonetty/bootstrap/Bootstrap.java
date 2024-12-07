@@ -1,40 +1,45 @@
 package com.wuyiccc.cookbook.network.hellonetty.bootstrap;
 
 import com.wuyiccc.cookbook.network.hellonetty.channel.*;
+import com.wuyiccc.cookbook.network.hellonetty.util.AttributeKey;
 import com.wuyiccc.cookbook.network.hellonetty.util.concurrent.EventExecutor;
 import com.wuyiccc.cookbook.network.hellonetty.util.internal.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Map;
 
 /**
  * @author wuyiccc
  * @date 2024/11/22 22:48
  */
 @Slf4j
-public class Bootstrap<C extends Channel> {
+public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
 
 
-    private EventLoopGroup workerGroup;
 
     private volatile ChannelFactory<? extends Channel> channelFactory;
+
+    private final BootstrapConfig config = new BootstrapConfig(this);
+
+    // 远程地址
+    private volatile SocketAddress remoteAddress;
 
     public Bootstrap() {
 
     }
 
-    public Bootstrap group(EventLoopGroup childGroup) {
-        this.workerGroup = childGroup;
+    public Bootstrap(Bootstrap bootstrap) {
+        super(bootstrap);
+        remoteAddress = bootstrap.remoteAddress;
+    }
+
+    public Bootstrap remoteAddress(SocketAddress remoteAddress) {
+        this.remoteAddress = remoteAddress;
         return this;
     }
 
-
-    public Bootstrap channel(Class<? extends C> channelClass) {
-
-        this.channelFactory = new ReflectiveChannelFactory<C>(channelClass);
-        return this;
-    }
 
 
     public ChannelFuture connect(String inetHost, int inetPort) {
@@ -111,35 +116,37 @@ public class Bootstrap<C extends Channel> {
         });
     }
 
-    final ChannelFuture initAndRegister() {
-
-        Channel channel = null;
-        //在这里初始化服务端channel，反射创建对象调用的无参构造器，
-        //可以去NioServerSocketChannel类中看看无参构造器中做了什么
-        channel = channelFactory.newChannel();
-        //这里是异步注册的，一般来说，workerGroup设置的也是一个线程执行器。只有在服务端的workerGroup中，才会设置多个线程执行器
-        ChannelFuture regFuture = workerGroup.next().register(channel);
-        return regFuture;
+    @Override
+    void init(Channel channel) throws Exception {
+        final Map<ChannelOption<?>, Object> options = options0();
+        synchronized (options) {
+            setChannelOptions(channel, options);
+        }
+        final Map<AttributeKey<?>, Object> attrs = attrs0();
+        synchronized (attrs) {
+            for (Map.Entry<AttributeKey<?>, Object> e: attrs.entrySet()) {
+                channel.attr((AttributeKey<Object>) e.getKey()).set(e.getValue());
+            }
+        }
     }
 
-    static final class PendingRegistrationPromise extends DefaultChannelPromise {
 
-        private volatile boolean registered;
+    @Override
+    public Bootstrap validate() {
+        super.validate();
+//        if (config.handler() == null) {
+//            throw new IllegalStateException("handler not set");
+//        }
+        return this;
+    }
 
-        PendingRegistrationPromise(Channel channel) {
-            super(channel);
-        }
+    @Override
+    public final BootstrapConfig config() {
+        return config;
+    }
 
-        //该方法是该静态类独有的，该方法被调用的时候，registered赋值为true
-        void registered() {
-            registered = true;
-        }
-
-
-        @Override
-        protected EventExecutor executor() {
-            return super.executor();
-        }
+    final SocketAddress remoteAddress() {
+        return remoteAddress;
     }
 
 }
