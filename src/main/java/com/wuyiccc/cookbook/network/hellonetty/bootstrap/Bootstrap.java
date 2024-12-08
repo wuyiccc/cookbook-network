@@ -58,7 +58,7 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
         //抽象父类就好了，就可以在父类中定义模版方法了。实际上源码中确实有一个父类，这个方法被定义在父类中，但我们暂时还不引入
         //整个方法和serverbootstrap中的doBind方法类似，判断和处理逻辑几乎一样
         final ChannelFuture regFuture = initAndRegister();
-        //得到要注册的kehuduanchannel
+        //得到要注册的客户端channel
         final Channel channel = regFuture.channel();
         if (regFuture.isDone()) {
             //这里的意思是future执行完成，但是没有成功，那么直接返回future即可

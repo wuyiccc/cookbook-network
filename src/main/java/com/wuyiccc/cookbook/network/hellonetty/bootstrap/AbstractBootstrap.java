@@ -23,7 +23,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 
 
     /**
-     * bossgroup会赋值给这个group,当你创建的是NioSocketChannel的时候，workgroup就会赋值给该属性
+     * bossGroup会赋值给这个group,当你创建的是NioSocketChannel的时候，workgroup就会赋值给该属性
      */
     volatile EventLoopGroup group;
 
@@ -255,7 +255,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
             //在这里初始化服务端channel，反射创建对象调用的无参构造器，
             //可以去NioServerSocketChannel类中看看无参构造器中做了什么
             channel = channelFactory.newChannel();
-            //初始化channel
+            //初始化channel, 顺便设置一下option
             init(channel);
         } catch (Throwable t) {
             if (channel != null) {

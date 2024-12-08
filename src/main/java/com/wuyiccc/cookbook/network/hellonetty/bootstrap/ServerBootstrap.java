@@ -21,8 +21,6 @@ import java.util.Map;
 public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, Channel> {
 
 
-    private EventLoopGroup bossGroup;
-
     private final Map<ChannelOption<?>, Object> childOptions = new LinkedHashMap<ChannelOption<?>, Object>();
 
     private final Map<AttributeKey<?>, Object> childAttrs = new LinkedHashMap<AttributeKey<?>, Object>();
@@ -31,10 +29,10 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, Channel>
     private final ServerBootstrapConfig config = new ServerBootstrapConfig(this);
 
 
+    /**
+     * BossGroup存放在抽象类中, 这里存放的是workGroup
+     */
     private EventLoopGroup childGroup;
-
-
-    private volatile ChannelFactory<? extends Channel> channelFactory;
 
 
     public ServerBootstrap() {
@@ -111,12 +109,10 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, Channel>
         }
     }
 
-    @SuppressWarnings("unchecked")
     private static Map.Entry<AttributeKey<?>, Object>[] newAttrArray(int size) {
         return new Map.Entry[size];
     }
 
-    @SuppressWarnings("unchecked")
     private static Map.Entry<ChannelOption<?>, Object>[] newOptionArray(int size) {
         return new Map.Entry[size];
     }
