@@ -135,7 +135,7 @@ public class DefaultAttributeMap implements AttributeMap {
     }
 
     /**
-     * 静态内部类, 封装了map数据中的value
+     * 静态内部类, 封装了map数据中的value, DefaultAttribute内部又封装了key对象, 其实更像一个键值对
      */
     private static final class DefaultAttribute<T> extends AtomicReference<T> implements Attribute<T> {
 
