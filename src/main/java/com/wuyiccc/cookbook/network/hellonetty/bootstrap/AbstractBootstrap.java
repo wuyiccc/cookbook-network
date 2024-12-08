@@ -255,7 +255,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
             //在这里初始化服务端channel，反射创建对象调用的无参构造器，
             //可以去NioServerSocketChannel类中看看无参构造器中做了什么
             channel = channelFactory.newChannel();
-            //初始化channel, 顺便设置一下option
+            //初始化channel, 顺便设置一下option, 这里是存储到NioServerSocketChannelConfig中, 后面bind的时候再配置到javaChannel上
             init(channel);
         } catch (Throwable t) {
             if (channel != null) {
