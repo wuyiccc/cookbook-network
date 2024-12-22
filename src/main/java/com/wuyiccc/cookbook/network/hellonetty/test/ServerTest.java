@@ -18,7 +18,7 @@ public class ServerTest {
         NioEventLoopGroup workerGroup = new NioEventLoopGroup(2);
         serverBootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
-                .option(ChannelOption.SO_BACKLOG, 10)
+                .option(ChannelOption.SO_BACKLOG, 1)
                 .bind("127.0.0.1", 8080)
                 .addListener(new GenericFutureListener<Future<? super Object>>() {
                     @Override

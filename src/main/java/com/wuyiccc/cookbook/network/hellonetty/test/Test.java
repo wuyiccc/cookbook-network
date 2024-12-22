@@ -5,6 +5,8 @@ import com.wuyiccc.cookbook.network.hellonetty.bootstrap.Bootstrap;
 import com.wuyiccc.cookbook.network.hellonetty.channel.nio.NioEventLoopGroup;
 import com.wuyiccc.cookbook.network.hellonetty.channel.socket.nio.NioSocketChannel;
 
+import java.util.concurrent.TimeUnit;
+
 public class Test {
     public static void main(String[] args) {
         NioEventLoopGroup workerGroup = new NioEventLoopGroup(1);
