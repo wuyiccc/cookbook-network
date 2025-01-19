@@ -1,5 +1,7 @@
 package com.wuyiccc.cookbook.network.mydemo.mydemo.simple.handler;
 
+import com.wuyiccc.cookbook.network.mydemo.mydemo.simple.request.SimpleRequest;
+import com.wuyiccc.cookbook.network.mydemo.mydemo.simple.serialize.CustomSerialize;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -30,21 +32,21 @@ public class ClientInputHandler extends ChannelInboundHandlerAdapter {
             while (true) {
                 try {
                     String data = reader.readLine();
+
+                    SimpleRequest simpleRequest = new SimpleRequest();
+                    simpleRequest.setContent(data);
+                    simpleRequest.setE(new RuntimeException("测试: " + i));
+                    byte[] dataBytes = CustomSerialize.serialize(simpleRequest);
+
                     // 输入数据
                     ByteBuf byteBuf = ctx.alloc().buffer();
-                    byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
                     byteBuf.writeInt(dataBytes.length);
                     byteBuf.writeBytes(dataBytes);
 
-                    byteBuf.writeInt(3);
-                    byteBuf.writeBytes("end".getBytes(StandardCharsets.UTF_8));
-                    ctx.channel().write(byteBuf);
+                    ctx.channel().writeAndFlush(byteBuf);
 
                     i++;
 
-                    if (i % 3 == 0) {
-                        ctx.channel().flush();
-                    }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

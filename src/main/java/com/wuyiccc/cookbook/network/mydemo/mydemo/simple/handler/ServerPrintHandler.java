@@ -1,5 +1,7 @@
 package com.wuyiccc.cookbook.network.mydemo.mydemo.simple.handler;
 
+import com.wuyiccc.cookbook.network.mydemo.mydemo.simple.request.SimpleRequest;
+import com.wuyiccc.cookbook.network.mydemo.mydemo.simple.serialize.CustomSerialize;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -26,9 +28,13 @@ public class ServerPrintHandler extends ChannelInboundHandlerAdapter {
 
         byte[] bytes = new byte[buf.readableBytes()];
         buf.readBytes(bytes);
-        System.out.println(new String(bytes));
-        //buf.release();
-        ctx.fireChannelRead(msg);
+
+        SimpleRequest deserialize = CustomSerialize.deserialize(bytes, SimpleRequest.class);
+
+        System.out.println(deserialize);
+
+        buf.release();
+        //ctx.fireChannelRead(msg);
     }
 
 
