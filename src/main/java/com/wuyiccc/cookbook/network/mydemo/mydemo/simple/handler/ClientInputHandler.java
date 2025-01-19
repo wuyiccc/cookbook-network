@@ -26,6 +26,7 @@ public class ClientInputHandler extends ChannelInboundHandlerAdapter {
 
             // 读取console的数据
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            int i = 0;
             while (true) {
                 try {
                     String data = reader.readLine();
@@ -37,7 +38,13 @@ public class ClientInputHandler extends ChannelInboundHandlerAdapter {
 
                     byteBuf.writeInt(3);
                     byteBuf.writeBytes("end".getBytes(StandardCharsets.UTF_8));
-                    ctx.channel().writeAndFlush(byteBuf);
+                    ctx.channel().write(byteBuf);
+
+                    i++;
+
+                    if (i % 3 == 0) {
+                        ctx.channel().flush();
+                    }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
